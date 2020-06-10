@@ -4,6 +4,8 @@
 # FTPS user:secret
 # PhpMyAdmin wp_admin:secret
 
+# SETUP phpmyadmin and add users into wordpress db
+
 # VARIABLES
 # Colors
 INFORMATION="\033[01;33m"
@@ -14,17 +16,11 @@ RESET="\033[0;0m"
 services=(		\
  	nginx		\
 	ftps		\
+	mysql		\
 	wordpress	\
-	#mysql		\
 	#phpmyadmin	\
 	#grafana		\
 	#influxdb	\
-)
-# Volumes
-pvs=( 			\
-	#wp 			\
-	#mysql 		\
-	#influxdb 	\
 )
 
 # sudo usermod -aG docker $(whoami);
@@ -59,6 +55,10 @@ do
             restart_service wordpress
             exit 0
         ;;
+        "-mysql")
+            restart_service mysql
+            exit 0
+        ;;
         *)
             continue
         ;;
@@ -73,6 +73,7 @@ minikube addons enable ingress
 minikube addons enable metrics-server
 
 echo "$CLUSTER_IP" > srcs/ftps/cluster_ip
+echo "$CLUSTER_IP" > srcs/mysql/cluster_ip
 eval $(minikube -p minikube docker-env)
 
 printf "$SUCCESS
@@ -98,14 +99,14 @@ do
 	if [[ $service == "nginx" ]]
 	then
 		kubectl delete -f srcs/ingress/ingress.yaml >/dev/null 2>&1
-		echo "\n		Creating ingress for nginx..."
+		printf "\n		Creating ingress for nginx..."
 		kubectl apply -f srcs/ingress/ingress.yaml > /dev/null
 	fi
 	kubectl delete -f srcs/$service/$service.yaml > /dev/null 2>&1
-	echo "\n		Creating container..."
+	printf "\n		Creating container..."
 	kubectl apply -f srcs/$service/$service.yaml > /dev/null
-	echo "\n	✅ $service done"
-done 
+	printf "\n	✅ $service done"
+done
 
 # minikube dashboard
 
