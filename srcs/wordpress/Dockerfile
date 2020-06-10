@@ -5,22 +5,23 @@
 #                                                     +:+ +:+         +:+      #
 #    By: lafontai <lafontai@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
-#    Created: 2020/06/09 11:45:25 by lafontai          #+#    #+#              #
-#    Updated: 2020/06/10 13:54:11 by lafontai         ###   ########.fr        #
+#    Created: 2020/06/09 15:23:38 by lafontai          #+#    #+#              #
+#    Updated: 2020/06/10 15:07:54 by lafontai         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
 FROM alpine:latest
 
-RUN echo 'http://dl-cdn.alpinelinux.org/alpine/edge/testing' >> /etc/apk/repositories
 RUN apk update
-RUN apk add openssl pure-ftpd
-RUN rm -rf /var/cache/apk/*
+RUN apk add wget php7 php7-fpm php7-opcache php7-gd php7-mysqli php7-zlib php7-curl php7-mbstring php7-json php7-session
 
-COPY test.txt /home/user/
-COPY cluster_ip /tmp/cluster_ip
-COPY init.sh /tmp/init.sh
+RUN mkdir -p /usr/share/webapps/
+RUN wget https://wordpress.org/latest.tar.gz -o latest.tar.gz
+RUN mv /latest.tar.gz.1 /tmp/
+
+COPY wp-config.php /tmp/
+COPY init.sh /tmp/
 
 ENTRYPOINT sh /tmp/init.sh
 
-EXPOSE 21 21000
+EXPOSE 5050

@@ -1,11 +1,31 @@
 #!/bin/bash
 
+# PASSWORDS
 # FTPS user:secret
+# PhpMyAdmin wp_admin:secret
 
+# VARIABLES
+# Colors
 INFORMATION="\033[01;33m"
 SUCCESS="\033[1;32m"
 ERROR="\033[1;31m"
 RESET="\033[0;0m"
+# Services
+services=(		\
+ 	nginx		\
+	ftps		\
+	wordpress	\
+	#mysql		\
+	#phpmyadmin	\
+	#grafana		\
+	#influxdb	\
+)
+# Volumes
+pvs=( 			\
+	#wp 			\
+	#mysql 		\
+	#influxdb 	\
+)
 
 # sudo usermod -aG docker $(whoami);
 # make sure VM has 2 CPU cores
@@ -35,38 +55,66 @@ do
             restart_service ftps
             exit 0
         ;;
+        "-wordpress")
+            restart_service wordpress
+            exit 0
+        ;;
         *)
             continue
         ;;
     esac
 done
 
-# attention a bien clear les services et deployments si on relance
-
 minikube start --vm-driver=docker --extra-config=apiserver.service-node-port-range=1-35000
 CLUSTER_IP=$(kubectl get node -o=custom-columns='DATA:status.addresses[0].address' | sed -n 2p)
 
+minikube addons enable dashboard
 minikube addons enable ingress
 minikube addons enable metrics-server
 
 echo "$CLUSTER_IP" > srcs/ftps/cluster_ip
+eval $(minikube -p minikube docker-env)
+
+printf "$SUCCESS
+███████ ████████      ███████ ███████ ██████  ██    ██ ██  ██████ ███████ ███████ 
+██         ██         ██      ██      ██   ██ ██    ██ ██ ██      ██      ██      
+█████      ██         ███████ █████   ██████  ██    ██ ██ ██      █████   ███████ 
+██         ██              ██ ██      ██   ██  ██  ██  ██ ██      ██           ██ 
+██         ██ ███████ ███████ ███████ ██   ██   ████   ██  ██████ ███████ ███████    
+                                                                    (by lafontai)       
+$RESET"
+
+# attention a bien clear les services et deployments si on relance
+
 
 # CLEAR EVERYTHING
 
-# CREATE IMAGES
-eval $(minikube -p minikube docker-env)
-docker build -t nginx srcs/nginx/
-docker build -t ftps srcs/ftps/
-printf "$SUCCESS Docker images are built\n$RESET"
-
-# DEPLOY
-
+echo "Building images:"
+for service in "${services[@]}"
+do
+	printf "\n	> $service:"
+	printf "\n		Building new image..."		
+	docker build -t $service srcs/$service > /dev/null
+	if [[ $service == "nginx" ]]
+	then
+		kubectl delete -f srcs/ingress/ingress.yaml >/dev/null 2>&1
+		echo "\n		Creating ingress for nginx..."
+		kubectl apply -f srcs/ingress/ingress.yaml > /dev/null
+	fi
+	kubectl delete -f srcs/$service/$service.yaml > /dev/null 2>&1
+	echo "\n		Creating container..."
+	kubectl apply -f srcs/$service/$service.yaml > /dev/null
+	echo "\n	✅ $service done"
+done 
 
 # minikube dashboard
 
-kubectl apply -f srcs/nginx/nginx.yaml
-kubectl apply -f srcs/ingress/ingress.yaml
-kubectl apply -f srcs/ftps/ftps.yaml
-printf "$SUCCESS YAML files added to Minikube\n$RESET"
+# TESTS
 
-printf "$SUCCESS Minikube IP address: $CLUSTER_IP\n$RESET"
+# FTPS
+# sudo apt-get install filezilla
+# filezilla ftp://user:secret@172.17.0.2:21
+# passive mode needed to transfer files
+
+printf "$SUCCESS
+Minikube IP address: $CLUSTER_IP\n\n$RESET"
