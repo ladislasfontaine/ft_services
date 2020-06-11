@@ -1,10 +1,9 @@
 #!/bin/bash
 
 # PASSWORDS
-# FTPS user:secret
-# PhpMyAdmin wp_admin:secret
-
-# SETUP phpmyadmin and add users into wordpress db
+# FTPS          user:secret
+# PhpMyAdmin    wp_admin:secret
+# Wordpress     admin:secret
 
 # VARIABLES
 # Colors
@@ -18,7 +17,7 @@ services=(		\
 	ftps		\
 	mysql		\
 	wordpress	\
-	#phpmyadmin	\
+	phpmyadmin	\
 	#grafana		\
 	#influxdb	\
 )
@@ -59,6 +58,10 @@ do
             restart_service mysql
             exit 0
         ;;
+        "-phpmyadmin")
+            restart_service phpmyadmin
+            exit 0
+        ;;
         *)
             continue
         ;;
@@ -85,15 +88,10 @@ printf "$SUCCESS
                                                                     (by lafontai)       
 $RESET"
 
-# attention a bien clear les services et deployments si on relance
-
-
-# CLEAR EVERYTHING
-
 echo "Building images:"
 for service in "${services[@]}"
 do
-	printf "\n	> $service:"
+	printf "\n\n	> $service:"
 	printf "\n		Building new image..."		
 	docker build -t $service srcs/$service > /dev/null
 	if [[ $service == "nginx" ]]
