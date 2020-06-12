@@ -159,7 +159,4 @@ ACCOUNTS:			(username:password)
 				admin:secret (Admin)
 				random1:secret (Subscriber)
 				random2:secret (Subscriber)
-TEST PERSISTENT MYSQL/INFLUXDB:
-	kubectl exec -it \$(kubectl get pods | grep mysql | cut -d\" \" -f1) -- /bin/sh -c \"kill 1\"
-	kubectl exec -it \$(kubectl get pods | grep influxdb | cut -d\" \" -f1) -- /bin/sh -c \"kill 1\"
 "
