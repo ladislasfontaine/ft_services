@@ -50,21 +50,21 @@ spec:
         - name: nginx
           image: nginx:latest
           imagePullPolicy: Never
-      #    env:
-      #      - name: SSH_USER
-      #        value: admin
-      #      - name: SSH_PASSWORD
-      #        value: admin
-      #    readinessProbe:
-      #      httpGet:
-      #        path: /
-      #        port: 80
-      #      initialDelaySeconds: 5
-      #      periodSeconds: 5
-      #      successThreshold: 1
-      #    livenessProbe:
-      #      tcpSocket:
-      #        port: 30001
-      #      initialDelaySeconds: 5
-      #      periodSeconds: 5
-      #      successThreshold: 1
+          #env:
+          #  - name: SSH_USER
+          #    value: admin
+          #  - name: SSH_PASSWORD
+          #    value: secret
+          #readinessProbe:
+          #  httpGet:
+          #    path: /
+          #    port: 80
+          #  initialDelaySeconds: 5
+          #  periodSeconds: 5
+          #  successThreshold: 1
+          #livenessProbe:
+          #  tcpSocket:
+          #    port: 30001
+          #  initialDelaySeconds: 5
+          #  periodSeconds: 5
+          #  successThreshold: 1

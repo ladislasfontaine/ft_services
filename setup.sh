@@ -89,6 +89,7 @@ minikube addons enable dashboard
 minikube addons enable ingress
 minikube addons enable metrics-server
 
+cat ~/.ssh/id_rsa > srcs/nginx/id_rsa_key_ssh
 echo "$CLUSTER_IP" > srcs/ftps/cluster_ip
 echo "$CLUSTER_IP" > srcs/mysql/cluster_ip
 cp srcs/grafana/datasource_ip.yaml srcs/grafana/datasource.yaml
@@ -139,3 +140,29 @@ done
 
 printf "$SUCCESS
 Minikube IP address: $CLUSTER_IP\n\n$RESET"
+
+echo " 
+Minikube IP is : $CLUSTER_IP - Type 'minikube dashboard' for dashboard
+================================================================================
+LINKS:
+	nginx:			https://$CLUSTER_IP/ (or http)
+	wordpress:		http://$CLUSTER_IP:5050
+	phpmyadmin:		http://$CLUSTER_IP:5000
+	grafana:		http://$CLUSTER_IP:3000
+OTHERS:
+	nginx:			ssh admin@$CLUSTER_IP -p 30001
+	ftps:			$CLUSTER_IP:21
+	
+ACCOUNTS:			(username:password)
+	ssh:			admin:secret (port 30001)
+	ftps:			user:secret (port 21)
+	database:		wp_admin:secret (sql / phpmyadmin)
+	grafana:		admin:admin
+	wordpress:
+				admin:secret (Admin)
+				random1:secret (Subscriber)
+				random2:secret (Subscriber)
+TEST PERSISTENT MYSQL/INFLUXDB:
+	kubectl exec -it \$(kubectl get pods | grep mysql | cut -d\" \" -f1) -- /bin/sh -c \"kill 1\"
+	kubectl exec -it \$(kubectl get pods | grep influxdb | cut -d\" \" -f1) -- /bin/sh -c \"kill 1\"
+"

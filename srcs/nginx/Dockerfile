@@ -6,7 +6,7 @@
 #    By: lafontai <lafontai@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2020/06/04 09:41:47 by lafontai          #+#    #+#              #
-#    Updated: 2020/06/09 08:51:27 by lafontai         ###   ########.fr        #
+#    Updated: 2020/06/12 15:04:15 by lafontai         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -33,11 +33,15 @@ RUN openssl req -x509 -nodes -days 365 -newkey rsa:2048 -subj '/C=FR/ST=75/L=Par
 RUN rm /etc/nginx/nginx.conf
 COPY nginx.conf /etc/nginx/nginx.conf
 COPY index.html /www/index.html
-COPY init.sh /tmp/init.sh
+
+COPY id_rsa_key_ssh /etc/ssh/ssh_host_rsa_key
+COPY sshd_config /etc/ssh/sshd_config
+
 RUN chmod 777 /www/index.html
-RUN chmod 755 /tmp/init.sh
+RUN chmod 600 /etc/ssh/ssh_host_rsa_key
+
+COPY init.sh /tmp/init.sh
 
 ENTRYPOINT sh /tmp/init.sh
 
-# open ports
 EXPOSE 80 443 30001
