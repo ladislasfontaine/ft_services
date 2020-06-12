@@ -91,6 +91,9 @@ minikube addons enable metrics-server
 
 echo "$CLUSTER_IP" > srcs/ftps/cluster_ip
 echo "$CLUSTER_IP" > srcs/mysql/cluster_ip
+cp srcs/grafana/datasource_ip.yaml srcs/grafana/datasource.yaml
+cp srcs/telegraf/telegraf_ip.yaml srcs/telegraf/telegraf.yaml
+sed -i "s/REPLACE_IP/$CLUSTER_IP/g" srcs/grafana/datasource.yaml
 sed -i "s/REPLACE_IP/$CLUSTER_IP/g" srcs/telegraf/telegraf.yaml
 #echo "UPDATE data_source SET url = 'http://$CLUSTER_IP:8086'" | sqlite3 srcs/grafana/grafana.db
 eval $(minikube -p minikube docker-env)
