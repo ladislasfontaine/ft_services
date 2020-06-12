@@ -1,10 +1,11 @@
 #!/bin/bash
 
 # PASSWORDS
-# FTPS			user:secret
-# PhpMyAdmin	wp_admin:secret
-# Wordpress		admin:secret
+# ftps			user:secret
+# phpmyadmin	wp_admin:secret
+# wordpress		admin:secret
 # grafana		admin:admin
+# ssh			www:secret
 
 # VARIABLES
 # Colors
@@ -126,10 +127,6 @@ do
 	printf "\n	✅ $service done"
 done
 
-# minikube dashboard
-
-# TESTS
-
 # FTPS
 # sudo apt-get install filezilla
 # filezilla ftp://user:secret@172.17.0.2:21
@@ -150,11 +147,11 @@ LINKS:
 	phpmyadmin:		http://$CLUSTER_IP:5000
 	grafana:		http://$CLUSTER_IP:3000
 OTHERS:
-	nginx:			ssh admin@$CLUSTER_IP -p 30001
+	nginx:			ssh www@$CLUSTER_IP -p 30001
 	ftps:			$CLUSTER_IP:21
 	
 ACCOUNTS:			(username:password)
-	ssh:			admin:secret (port 30001)
+	ssh:			www:secret (port 30001)
 	ftps:			user:secret (port 21)
 	database:		wp_admin:secret (sql / phpmyadmin)
 	grafana:		admin:admin
