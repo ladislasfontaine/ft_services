@@ -1,9 +1,10 @@
 #!/bin/bash
 
 # PASSWORDS
-# FTPS          user:secret
-# PhpMyAdmin    wp_admin:secret
-# Wordpress     admin:secret
+# FTPS			user:secret
+# PhpMyAdmin	wp_admin:secret
+# Wordpress		admin:secret
+# grafana		admin:admin
 
 # VARIABLES
 # Colors
@@ -18,8 +19,9 @@ services=(		\
 	mysql		\
 	wordpress	\
 	phpmyadmin	\
-	#grafana		\
-	#influxdb	\
+	grafana		\
+	influxdb	\
+	telegraf	\
 )
 
 # sudo usermod -aG docker $(whoami);
@@ -27,45 +29,57 @@ services=(		\
 
 restart_service()
 {
-    kubectl delete deploy $1-deployment
-    kubectl delete service $1-service
-    eval $(minikube -p minikube docker-env)
-    docker rmi -f $1
-    docker build -t $1 srcs/$1/
-    kubectl apply -f srcs/$1/$1.yaml
-    printf "$SUCCESS Restarted $1\n"
+	kubectl delete deploy $1-deployment
+	kubectl delete service $1-service
+	eval $(minikube -p minikube docker-env)
+	docker rmi -f $1
+	docker build -t $1 srcs/$1/
+	kubectl apply -f srcs/$1/$1.yaml
+	printf "$SUCCESS Restarted $1\n"
 }
 
 for i in 0 $#
 do
-    if [ "$i" = "0" ]; then
-        continue
-    fi
-    case "${!i}" in
-        "-nginx")
-            restart_service nginx
-            exit 0
-        ;;
-        "-ftps")
-            restart_service ftps
-            exit 0
-        ;;
-        "-wordpress")
-            restart_service wordpress
-            exit 0
-        ;;
-        "-mysql")
-            restart_service mysql
-            exit 0
-        ;;
-        "-phpmyadmin")
-            restart_service phpmyadmin
-            exit 0
-        ;;
-        *)
-            continue
-        ;;
-    esac
+	if [ "$i" = "0" ]; then
+		continue
+	fi
+	case "${!i}" in
+		"-nginx")
+			restart_service nginx
+			exit 0
+		;;
+		"-ftps")
+			restart_service ftps
+			exit 0
+		;;
+		"-wordpress")
+			restart_service wordpress
+			exit 0
+		;;
+		"-mysql")
+			restart_service mysql
+			exit 0
+		;;
+		"-phpmyadmin")
+			restart_service phpmyadmin
+			exit 0
+		;;
+		"-grafana")
+			restart_service grafana
+			exit 0
+		;;
+		"-influxdb")
+			restart_service influxdb
+			exit 0
+		;;
+		"-telegraf")
+			restart_service telegraf
+			exit 0
+		;;
+		*)
+			continue
+		;;
+	esac
 done
 
 minikube start --vm-driver=docker --extra-config=apiserver.service-node-port-range=1-35000
@@ -77,6 +91,8 @@ minikube addons enable metrics-server
 
 echo "$CLUSTER_IP" > srcs/ftps/cluster_ip
 echo "$CLUSTER_IP" > srcs/mysql/cluster_ip
+sed -i "s/REPLACE_IP/$CLUSTER_IP/g" srcs/telegraf/telegraf.yaml
+#echo "UPDATE data_source SET url = 'http://$CLUSTER_IP:8086'" | sqlite3 srcs/grafana/grafana.db
 eval $(minikube -p minikube docker-env)
 
 printf "$SUCCESS
@@ -85,7 +101,7 @@ printf "$SUCCESS
 █████      ██         ███████ █████   ██████  ██    ██ ██ ██      █████   ███████ 
 ██         ██              ██ ██      ██   ██  ██  ██  ██ ██      ██           ██ 
 ██         ██ ███████ ███████ ███████ ██   ██   ████   ██  ██████ ███████ ███████    
-                                                                    (by lafontai)       
+																	(by lafontai)       
 $RESET"
 
 echo "Building images:"
@@ -114,6 +130,9 @@ done
 # sudo apt-get install filezilla
 # filezilla ftp://user:secret@172.17.0.2:21
 # passive mode needed to transfer files
+
+# GRAFANA
+# db params 172.17.0.2:8086 telegraf:secret
 
 printf "$SUCCESS
 Minikube IP address: $CLUSTER_IP\n\n$RESET"
